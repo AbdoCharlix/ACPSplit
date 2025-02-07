@@ -27,7 +27,24 @@ def main():
     owners = cost_table.columns[2:]
     print(owners)
     print(cost_table.values)
-    #for o in owners:
+    for o in owners:
+        with open(o + '.tex', 'w') as f:
+            f.write(r"\begin{center}" + '\n')
+            f.write(r"\begin{tabular}{ | l | c | r |}" + '\n')
+            f.write(r"\hline" + '\n')
+            for l in cost_table.index:
+                line = cost_table[report_name][l]
+                line += ' & '
+                line += str(cost_table[total_column][l])
+                line += ' & '
+                line += str(cost_table[o][l])
+                f.write(line + r"\\ \hline" + '\n')
+            f.write(r"\end{tabular}" + '\n')
+            f.write(r"\end{center}" + '\n')
+
+            to_pay = cost_table.sum(axis=0)
+            summary_line = 'Merci de regler la somme de ' + str(to_pay[o]) + r'e avec la communication \textbf{' + report_name + o + "}.\n"
+            f.write(summary_line)
 
 
 if __name__ == '__main__':
