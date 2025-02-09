@@ -1,0 +1,32 @@
+\documentclass[12pt]{lettre}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{eurosym}
+\usepackage[frenchb]{babel}
+\usepackage{numprint}
+
+\begin{document}
+\institut{acp}
+\begin{letter}{%NAME%}
+
+\def\concname{Objet :~} % On définit ici la commande 'objet'
+\conc{Common cost bill - %TITLE%}
+\opening{Dear,}
+
+Here is the breakdown of the common cost for you account for %TITLE%.
+
+%TABLE%
+
+Please wire the total of %AMOUNT% euros with communication \textit{Charges %NAME%}.
+
+Name: %NAME%
+
+IBAN: BE00 1111 1111 1111
+
+\closing{Yours truly,}
+
+\end{letter}
+
+\end{document}
