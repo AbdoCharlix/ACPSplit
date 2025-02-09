@@ -47,6 +47,8 @@ def main():
 
     for o in owners:
         tex_filename = os.path.join(out_folder, o + '.tex')
+        # Compute total amount for that owner
+        to_pay = cost_table.sum(axis=0)[o]
         # Create expense table for that owner in tex - usable format
         table = ''
         table += r"\begin{center}" + '\n'
@@ -62,11 +64,11 @@ def main():
             table += ' & '
             table += str(cost_table[o][l])
             table += r"\\ \hline" + '\n'
+        table += r"\textbf{Total} & \textbf{" + str(cost_table.sum(axis=0)[total_column]) + r"} & \textbf{" + str(
+            to_pay) + r"}" + '\n'
+        table += r"\\ \hline" + '\n'
         table += r"\end{tabular}" + '\n'
         table += r"\end{center}" + '\n'
-
-        # Compute total amount for that owner
-        to_pay = cost_table.sum(axis=0)[o]
 
         # Replace relevant strings in the template tex
         letter_tex = template_tex.replace(r"%NAME%", o)
