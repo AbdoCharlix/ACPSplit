@@ -1,6 +1,7 @@
 import pandas as pd
 import argparse
 import os
+import subprocess
 
 
 def main():
@@ -76,6 +77,8 @@ def main():
         # Write final .tex file
         with open(tex_filename, 'w') as f:
             f.write(letter_tex)
+        subprocess.run(
+            ['pdflatex', '-output-directory=' + out_folder, '-jobname=' + report_name + '_' + o, tex_filename])
 
 
 if __name__ == '__main__':
