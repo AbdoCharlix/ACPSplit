@@ -15,6 +15,8 @@ class CostTable:
         self.template_tex = template_file.read()
         template_file.close()
 
+        self.email_pattern = re.compile('\S+@\S+.\S+')
+
     def get_report_title(self):
         return self.cost_table.columns[0]
 
@@ -25,8 +27,10 @@ class CostTable:
         return self.cost_table.columns[2:]
 
     def get_owner_name(self, owner):
-        # TODO: will add some parsing to allow e-mail handling
-        return owner
+        return self.email_pattern.split(owner)[0].strip()
+
+    def get_owner_email(self, owner):
+        return self.email_pattern.findall(owner)
 
     def get_owner_total(self, o):
         return str(self.cost_table.sum(axis=0)[o])
@@ -100,8 +104,9 @@ def main():
 
     out_folder = args.out_dir
     email = args.email
-    email_pattern = r'\S+@\S+.\S+'
+
     for o in expense_report.get_owners():
+        expense_report.get_owner_email(o)
         letter_tex = expense_report.get_latex_owner(o)
         tex_filename = os.path.join(out_folder, o + '.tex')
         # Write final .tex file
