@@ -1,0 +1,18 @@
+Dear,
+
+Please find in attachment the bill for the common cost
+%TITLE%.
+
+Please wire the total of %AMOUNT% euros to the account:
+
+Name: ACP \textsc{FakeName}
+IBAN: BE00 1111 1111 1111
+
+Communication: Charges %NAME%
+
+Thank you !
+
+Kind regards,
+
+FakeName
+Syndic
