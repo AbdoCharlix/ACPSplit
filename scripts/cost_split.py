@@ -57,12 +57,14 @@ def main():
         # Write final .tex file
         with open(tex_filename, 'w') as f:
             f.write(letter_tex)
+        jobname = expense_report.get_report_title() + '_' + expense_report.get_owner_name(o)
+        jobname = jobname.replace(' ', '_')
         subprocess.run(
             ['pdflatex', '-output-directory=' + out_folder,
-             '-jobname=' + expense_report.get_report_title() + '_' + expense_report.get_owner_name(o), tex_filename])
+             '-jobname=' + jobname, tex_filename])
         if email and len(expense_report.get_owner_email(o)) > 0:
             filename = os.path.join(out_folder,
-                                    expense_report.get_report_title() + '_' + expense_report.get_owner_name(o) + '.pdf')
+                                    jobname + '.pdf')
             email_wrapper.send_email(expense_report, o, filename)
 
 

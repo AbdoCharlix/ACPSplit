@@ -11,7 +11,8 @@ import os
 
 class EmailWrapper:
     def __init__(self, mail_template):
-        self.sender_email = "charles@fakemail.me"
+        self.sender_id = "FakeName <fake@fakename.be>"
+        self.sender_email = 'fake@fakename.be'
         self.password = input("Type your password and press enter:")
         template_file = open(mail_template, 'r')
         self.message_template = template_file.read()
@@ -32,43 +33,40 @@ class EmailWrapper:
 
     def send_email(self, table: CostTable, owner: str, filename):
         # Create a multipart message and set headers
+        # Send for each recipient in email list
         to_email = table.get_owner_email(owner)
-        message = MIMEMultipart()
-        message["From"] = self.sender_email
-        message["To"] = to_email[0]
-        message["Subject"] = self.get_subject(table)
-        if len(to_email) > 1:
-            bcc = to_email[1]
-            for e in range(2, len(to_email)):
-                bcc += ', '
-                bcc += to_email[e]
-            message["Bcc"] = bcc
+        for e in to_email:
+            message = MIMEMultipart()
+            message["From"] = self.sender_id
+            message["To"] = e
+            message["Subject"] = self.get_subject(table)
 
-        # Add body to email
-        message.attach(MIMEText(self.get_email_text(table, owner), "plain"))
+            # Add body to email
+            message.attach(MIMEText(self.get_email_text(table, owner), "plain"))
 
-        # Open PDF file in binary mode
-        with open(filename, "rb") as attachment:
-            # Add file as application/octet-stream
-            # Email client can usually download this automatically as attachment
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(attachment.read())
+            # Open PDF file in binary mode
+            with open(filename, "rb") as attachment:
+                # Add file as application/octet-stream
+                # Email client can usually download this automatically as attachment
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment.read())
 
-        # Encode file in ASCII characters to send by email
-        encoders.encode_base64(part)
+            # Encode file in ASCII characters to send by email
+            encoders.encode_base64(part)
 
-        # Add header as key/value pair to attachment part
-        part.add_header(
-            "Content-Disposition",
-            f"attachment; filename= {os.path.basename(filename)}",
-        )
+            # Add header as key/value pair to attachment part
+            part.add_header(
+                "Content-Disposition",
+                f"attachment; filename= {os.path.basename(filename)}",
+            )
 
-        # Add attachment to message and convert message to string
-        message.attach(part)
-        text = message.as_string()
+            # Add attachment to message and convert message to string
+            message.attach(part)
 
-        # Log in to server using secure context and send email
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL("smtp.mail.ovh.net", 465, context=context) as server:
-            server.login(self.sender_email, self.password)
-            server.sendmail(self.sender_email, to_email[0], text)
+            text = message.as_string()
+
+            # Log in to server using secure context and send email
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL("smtp.mail.ovh.net", 465, context=context) as server:
+                server.login(self.sender_email, self.password)
+                server.sendmail(self.sender_email, e, text)

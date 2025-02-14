@@ -12,7 +12,7 @@ class CostTable:
         self.template_tex = template_file.read()
         template_file.close()
 
-        self.email_pattern = re.compile('\S+@\S+.\S+')
+        self.email_pattern = re.compile(r"\S+@\S+")
 
     def get_report_title(self):
         return self.cost_table.columns[0]
@@ -27,7 +27,8 @@ class CostTable:
         return self.email_pattern.split(owner)[0].strip()
 
     def get_owner_email(self, owner):
-        return self.email_pattern.findall(owner)
+        email = self.email_pattern.findall(owner)
+        return email
 
     def get_owner_total(self, o):
         return str(self.cost_table.sum(axis=0)[o])
