@@ -1,8 +1,10 @@
 import argparse
 import os
+from pathlib import Path
 import subprocess
 from cost_table import CostTable
 from send_email import EmailWrapper
+import configparser
 
 
 def main():
@@ -38,26 +40,42 @@ def main():
         default='outputs'
     )
 
-    parser.add_argument('--email', '-e', action='store_true', default=False, help='Switch to send invoices via e-mail')
+    parser.add_argument(
+        '--config', '-c',
+        type=str,
+        required=True,
+        help='Path for configuration file, with email parameters and strings to replace in templates'
+    )
 
     args = parser.parse_args()
+
+    # Get global variables for bills and email
+    config = configparser.ConfigParser()
+    config.read(args.config)
 
     # Read table and get owners+expenses names
     expense_report = CostTable(table_path=args.input, tex_path=args.tex)
 
+    # Create output directory if it does not exist
     out_folder = args.out_dir
-    email = args.email and args.mail is not None
+    Path(out_folder).mkdir(parents=True, exist_ok=True)
+
+    # Prepare email out if a template exists
+    email = args.mail is not None
     if email:
-        email_wrapper = EmailWrapper(args.mail)
+        email_wrapper = EmailWrapper(args.mail, config['Email'])
 
     for o in expense_report.get_owners():
-        expense_report.get_owner_email(o)
         letter_tex = expense_report.get_latex_owner(o)
+        # Replace global variables with values from config file
+        for key in config['Tex']:
+            letter_tex = letter_tex.replace(key, config['Tex'][key])
         tex_filename = os.path.join(out_folder, o + '.tex')
         # Write final .tex file
         with open(tex_filename, 'w') as f:
             f.write(letter_tex)
         jobname = expense_report.get_report_title() + '_' + expense_report.get_owner_name(o)
+        # Don't want space in file name
         jobname = jobname.replace(' ', '_')
         subprocess.run(
             ['pdflatex', '-output-directory=' + out_folder,

@@ -5,7 +5,10 @@ import pandas as pd
 
 class CostTable:
     def __init__(self, table_path: str, tex_path: str):
+        # Load table from csv file
         self.cost_table = pd.read_csv(table_path)
+        # Missing value means this person does not pay towards that expense
+        self.cost_table.fillna(0, inplace=True)
 
         # Read template LaTeX for pdf letters
         template_file = open(tex_path, 'r')
@@ -15,6 +18,8 @@ class CostTable:
         self.email_pattern = re.compile(r"\S+@\S+")
 
     def get_report_title(self):
+        # We read the title from top left corner, since it's directly related to the expenses
+        # Makes tracking a bit easier
         return self.cost_table.columns[0]
 
     def get_total_column(self):
@@ -60,8 +65,8 @@ class CostTable:
     def get_latex_owner(self, owner):
         latex_owner = deepcopy(self.template_tex)
         # Replace relevant strings in the template tex
-        latex_owner = latex_owner.replace(r"%NAME%", self.get_owner_name(owner))
-        latex_owner = latex_owner.replace(r"%TABLE%", self.get_cost_summary(owner))
-        latex_owner = latex_owner.replace(r"%AMOUNT%", self.get_owner_total(owner))
-        latex_owner = latex_owner.replace(r"%TITLE%", self.get_report_title())
+        latex_owner = latex_owner.replace(r"_NAME_", self.get_owner_name(owner))
+        latex_owner = latex_owner.replace(r"_TABLE_", self.get_cost_summary(owner))
+        latex_owner = latex_owner.replace(r"_AMOUNT_", self.get_owner_total(owner))
+        latex_owner = latex_owner.replace(r"_TITLE_", self.get_report_title())
         return latex_owner
