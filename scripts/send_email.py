@@ -10,25 +10,36 @@ import os
 
 
 class EmailWrapper:
-    def __init__(self, mail_template):
-        self.sender_id = "FakeName <fake@fakename.be>"
-        self.sender_email = 'fake@fakename.be'
+    def __init__(self, mail_template, mail_config):
+        # We populate global email variable from config file
+        self.sender_id = mail_config['sender_id']
+        self.sender_email = mail_config['sender_email']
+        self.config = mail_config
+        self.subject = mail_config['subject']
+        self.smtp_server = mail_config['smtp_server']
+        self.smtp_port = int(mail_config['smtp_port'])
         self.password = input("Type your password and press enter:")
+
+        # Read template file
         template_file = open(mail_template, 'r')
         self.message_template = template_file.read()
         template_file.close()
-        self.subject = "[ACP FakeName] Decompte de charges %TITLE%"
 
     def get_email_text(self, table: CostTable, owner: str):
         text = deepcopy(self.message_template)
-        text = text.replace('%TITLE%', table.get_report_title())
-        text = text.replace('%AMOUNT%', table.get_owner_total(owner))
-        text = text.replace('%NAME%', table.get_owner_name(owner))
+        # Replace some strings to personalize email text
+        text = text.replace('_TITLE_', table.get_report_title())
+        text = text.replace('_AMOUNT_', table.get_owner_total(owner))
+        text = text.replace('_NAME_', table.get_owner_name(owner))
+        # We raplace any key starting with _ in config.ini for more freedom in email template
+        for key in self.config:
+            if key[0] == '_':
+                text = text.replace(key, self.config[key])
         return text
 
     def get_subject(self, table: CostTable):
         text = deepcopy(self.subject)
-        text = text.replace('%TITLE%', table.get_report_title())
+        text = text.replace('_TITLE_', table.get_report_title())
         return text
 
     def send_email(self, table: CostTable, owner: str, filename):
@@ -67,6 +78,6 @@ class EmailWrapper:
 
             # Log in to server using secure context and send email
             context = ssl.create_default_context()
-            with smtplib.SMTP_SSL("smtp.mail.ovh.net", 465, context=context) as server:
+            with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, context=context) as server:
                 server.login(self.sender_email, self.password)
                 server.sendmail(self.sender_email, e, text)

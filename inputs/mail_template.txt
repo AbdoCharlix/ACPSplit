@@ -1,18 +1,17 @@
 Dear,
 
 Please find in attachment the bill for the common cost
-%TITLE%.
+_TITLE_.
 
-Please wire the total of %AMOUNT% euros to the account:
+Please wire the total of _AMOUNT_ euros to the account:
 
-Name: ACP FakeName
-IBAN: BE00 1111 1111 1111
+Name: _acpname_
+IBAN: _account_
 
-Communication: Charges %NAME%
+Communication: Charges _NAME_
 
 Thank you !
 
 Kind regards,
 
-FakeName
-Syndic
+_signature_
