@@ -5,6 +5,8 @@ import subprocess
 from cost_table import CostTable
 from send_email import EmailWrapper
 import configparser
+import tempfile
+from shutil import copy
 
 
 def main():
@@ -65,25 +67,36 @@ def main():
     if email:
         email_wrapper = EmailWrapper(args.mail, config['Email'])
 
-    for o in expense_report.get_owners():
-        letter_tex = expense_report.get_latex_owner(o)
-        # Replace global variables with values from config file
-        for key in config['Tex']:
-            letter_tex = letter_tex.replace(key, config['Tex'][key])
-        tex_filename = os.path.join(out_folder, o + '.tex')
-        # Write final .tex file
-        with open(tex_filename, 'w') as f:
-            f.write(letter_tex)
-        jobname = expense_report.get_report_title() + '_' + expense_report.get_owner_name(o)
-        # Don't want space in file name
-        jobname = jobname.replace(' ', '_')
-        subprocess.run(
-            ['pdflatex', '-output-directory=' + out_folder,
-             '-jobname=' + jobname, tex_filename])
-        if email and len(expense_report.get_owner_email(o)) > 0:
-            filename = os.path.join(out_folder,
+    # We want only the pdfs, so we put all the tex source and artifacts in a temp folder
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        for o in expense_report.get_owners():
+            letter_tex = expense_report.get_latex_owner(o)
+            # Replace global variables with values from config file
+            for key in config['Tex']:
+                letter_tex = letter_tex.replace(key, config['Tex'][key])
+
+            tex_filename = os.path.join(tmpdirname, o + '.tex')
+            # Write final .tex file
+            with open(tex_filename, 'w') as f:
+                f.write(letter_tex)
+            jobname = expense_report.get_report_title() + '_' + expense_report.get_owner_name(o)
+            # Don't want space in file name
+            jobname = jobname.replace(' ', '_')
+            subprocess.run(
+                ['pdflatex', '-output-directory=' + tmpdirname,
+                 '-jobname=' + jobname, tex_filename])
+
+            # Copy pdf output to permanent output folder
+            src_pdf_filename = os.path.join(tmpdirname,
                                     jobname + '.pdf')
-            email_wrapper.send_email(expense_report, o, filename)
+            dst_pdf_filename = os.path.join(out_folder,
+                                            jobname + '.pdf')
+            copy(src_pdf_filename, dst_pdf_filename)
+
+            if email and len(expense_report.get_owner_email(o)) > 0:
+                filename = os.path.join(out_folder,
+                                        jobname + '.pdf')
+                email_wrapper.send_email(expense_report, o, filename)
 
 
 if __name__ == '__main__':
