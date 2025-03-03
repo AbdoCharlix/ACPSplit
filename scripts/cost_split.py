@@ -79,7 +79,7 @@ def main():
             # Write final .tex file
             with open(tex_filename, 'w') as f:
                 f.write(letter_tex)
-            jobname = expense_report.get_report_title() + '_' + expense_report.get_owner_name(o)
+            jobname = 'Decompte_' + expense_report.get_report_title() + '_' + expense_report.get_owner_name(o)
             # Don't want space in file name
             jobname = jobname.replace(' ', '_')
             subprocess.run(
