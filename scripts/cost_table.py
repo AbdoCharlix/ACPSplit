@@ -9,6 +9,7 @@ class CostTable:
         self.cost_table = pd.read_csv(table_path)
         # Missing value means this person does not pay towards that expense
         self.cost_table.fillna(0, inplace=True)
+        self.cost_table = self.cost_table.round(decimals=2)
 
         # Read template LaTeX for pdf letters
         template_file = open(tex_path, 'r')
@@ -36,7 +37,7 @@ class CostTable:
         return email
 
     def get_owner_total(self, o):
-        return str(self.cost_table.sum(axis=0)[o])
+        return str(round(self.cost_table.sum(axis=0)[o], 2))
 
     def get_cost_summary(self, owner):
         # Create expense table for that owner in tex - usable format
@@ -45,7 +46,7 @@ class CostTable:
         table += r"\begin{center}" + '\n'
         table += r"\begin{tabular}{ | l | c | r |}" + '\n'
         table += r"\hline" + '\n'
-        table += r"\textbf{Expense} & \textbf{Total} & \textbf{Share}" + '\n'
+        table += r"\textbf{D\'epense} & \textbf{Total} & \textbf{Part}" + '\n'
         table += r"\\ \hline" + '\n'
         # Populate table for each expense
         for l in self.cost_table.index:
@@ -56,7 +57,9 @@ class CostTable:
             table += str(self.cost_table[owner][l])
             table += r"\\ \hline" + '\n'
         # Add line with total sum
-        table += r"\textbf{Total} & \textbf{" + str(self.cost_table.sum(axis=0)[self.get_total_column()]) + r"} & \textbf{" + self.get_owner_total(owner) + r"}" + '\n'
+        table += r"\textbf{Total} & \textbf{" + str(
+            round(self.cost_table.sum(axis=0)[self.get_total_column()], 2)) + r"} & \textbf{" + self.get_owner_total(
+            owner) + r"}" + '\n'
         table += r"\\ \hline" + '\n'
         table += r"\end{tabular}" + '\n'
         table += r"\end{center}" + '\n'
