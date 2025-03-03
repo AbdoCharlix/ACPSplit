@@ -85,7 +85,9 @@ def main():
             subprocess.run(
                 ['pdflatex', '-output-directory=' + tmpdirname,
                  '-jobname=' + jobname, tex_filename])
-
+            subprocess.run(
+                ['pdflatex', '-output-directory=' + tmpdirname,
+                 '-jobname=' + jobname, tex_filename])
             # Copy pdf output to permanent output folder
             src_pdf_filename = os.path.join(tmpdirname,
                                     jobname + '.pdf')
